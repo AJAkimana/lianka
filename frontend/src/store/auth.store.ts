@@ -23,6 +23,7 @@ interface User {
   promotion_wallet_balance: number;
   total_referrals: number;
   active_referrals: number;
+  completed_cycles: number;
 }
 
 interface AuthState {
@@ -39,7 +40,8 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  token: typeof window !== 'undefined' ? localStorage.getItem('lianka_token') : null,
+  token:
+    typeof window !== 'undefined' ? localStorage.getItem('lianka_token') : null,
   isLoading: false,
   unreadCount: 0,
 
@@ -49,9 +51,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ token });
   },
   setUnreadCount: (n) => set({ unreadCount: n }),
-  updateUser: (partial) => set((state) => ({
-    user: state.user ? { ...state.user, ...partial } : null,
-  })),
+  updateUser: (partial) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...partial } : null,
+    })),
   logout: () => {
     localStorage.removeItem('lianka_token');
     localStorage.removeItem('lianka_user');
@@ -71,7 +74,10 @@ interface AdminState {
 
 export const useAdminStore = create<AdminState>((set) => ({
   admin: null,
-  adminToken: typeof window !== 'undefined' ? localStorage.getItem('lianka_admin_token') : null,
+  adminToken:
+    typeof window !== 'undefined'
+      ? localStorage.getItem('lianka_admin_token')
+      : null,
 
   setAdmin: (admin) => set({ admin }),
   setAdminToken: (token) => {
