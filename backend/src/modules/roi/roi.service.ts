@@ -12,11 +12,11 @@ import { ReferralsService } from '../referrals/referrals.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
 
 const MAX_RATES = {
-  DAILY: 0.20,
-  BIWEEKLY: 0.50,
-  '40D': 1.00,
-  '90D': 1.20,
-  '180D': 1.50,
+  DAILY: 0.2,
+  BIWEEKLY: 0.5,
+  '40D': 1.0,
+  '90D': 1.2,
+  '180D': 1.5,
 };
 
 @Injectable()
@@ -37,7 +37,12 @@ export class RoiService {
 
   // ─── Admin: Set daily ROI rate ───────────────────────────
 
-  async setRate(date: string, timeframe: string, rate: number, adminId: string) {
+  async setRate(
+    date: string,
+    timeframe: string,
+    rate: number,
+    adminId: string,
+  ) {
     const max = MAX_RATES[timeframe];
     if (!max) throw new BadRequestException('Invalid timeframe');
     if (rate > max) {
@@ -47,7 +52,9 @@ export class RoiService {
     }
     if (rate <= 0) throw new BadRequestException('Rate must be positive');
 
-    const existing = await this.rateRepo.findOne({ where: { date, timeframe } });
+    const existing = await this.rateRepo.findOne({
+      where: { date, timeframe },
+    });
     if (existing) {
       existing.rate = rate;
       return this.rateRepo.save(existing);
@@ -177,7 +184,10 @@ export class RoiService {
 
         results.applied++;
       } catch (err) {
-        results.errors.push({ user_id: user.id, error: err.message });
+        results.errors.push({
+          user_id: user.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
 
@@ -185,7 +195,10 @@ export class RoiService {
     try {
       await this.loyaltyService.recalculateAll(date);
     } catch (err) {
-      results.errors.push({ context: 'loyalty_recalc', error: err.message });
+      results.errors.push({
+        context: 'loyalty_recalc',
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
 
     return { date, ...results };
@@ -211,18 +224,23 @@ export class RoiService {
              VALUES ($1, 'MISSED_REDEPOSIT', $2, $3)`,
             [user.id, user.completed_cycles, user.grace_end_date],
           );
-        } catch { /* non-blocking — table may not exist on older deploys */ }
+        } catch {
+          /* non-blocking — table may not exist on older deploys */
+        }
 
         // Recalculate loyalty (spec: recalculate after grace expiry)
         try {
           await this.loyaltyService.recalculateAfterGraceExpiry(user.id);
-        } catch { /* non-blocking */ }
+        } catch {
+          /* non-blocking */
+        }
 
         await this.notificationsService.create({
           user_id: user.id,
           type: 'ACCOUNT_DEACTIVATED',
           title: 'Grace Period Expired',
-          message: 'Your grace period has ended. Deposit to restart your earning cycle.',
+          message:
+            'Your grace period has ended. Deposit to restart your earning cycle.',
           dot_color: 'gray',
           is_critical: true,
         });

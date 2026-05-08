@@ -1,12 +1,15 @@
 import {
-  Injectable, UnauthorizedException, BadRequestException,
-  ConflictException, ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import { authenticator } from 'otplib';
+import * as authenticator from 'otplib';
 import * as QRCode from 'qrcode';
 import { UsersService } from '../users/users.service';
 import { WalletsService } from '../../services/wallets.service';
@@ -55,7 +58,9 @@ export class AuthService {
     // Find referrer
     let referred_by: string | null = null;
     if (dto.referral_code) {
-      const referrer = await this.usersService.findByReferralCode(dto.referral_code);
+      const referrer = await this.usersService.findByReferralCode(
+        dto.referral_code,
+      );
       if (referrer) referred_by = referrer.id;
     }
 
@@ -79,7 +84,11 @@ export class AuthService {
     }
 
     // Send verification email
-    await this.emailService.sendEmailVerification(email, email_verify_token, dto.full_name);
+    await this.emailService.sendEmailVerification(
+      email,
+      email_verify_token,
+      dto.full_name,
+    );
 
     return {
       message: 'Account created. Please verify your email.',
@@ -91,10 +100,13 @@ export class AuthService {
 
   async verifyEmail(token: string) {
     const user = await this.usersService.findByEmailVerifyToken(token);
-    if (!user) throw new BadRequestException('Invalid or expired verification link');
+    if (!user)
+      throw new BadRequestException('Invalid or expired verification link');
 
     if (user.email_verify_expires < new Date()) {
-      throw new BadRequestException('Verification link has expired. Request a new one.');
+      throw new BadRequestException(
+        'Verification link has expired. Request a new one.',
+      );
     }
 
     user.email_verified = true;
@@ -108,20 +120,28 @@ export class AuthService {
   async resendVerification(email: string) {
     const user = await this.usersService.findByEmail(email.toLowerCase());
     if (!user) throw new BadRequestException('Email not found');
-    if (user.email_verified) throw new BadRequestException('Email already verified');
+    if (user.email_verified)
+      throw new BadRequestException('Email already verified');
 
     const token = crypto.randomBytes(32).toString('hex');
     user.email_verify_token = token;
     user.email_verify_expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await this.usersService.save(user);
 
-    await this.emailService.sendEmailVerification(user.email, token, user.full_name);
+    await this.emailService.sendEmailVerification(
+      user.email,
+      token,
+      user.full_name,
+    );
     return { message: 'Verification email resent' };
   }
 
   // ─── Login ───────────────────────────────────────────────
 
-  async login(dto: { email: string; password: string; totp_code?: string }, ip: string) {
+  async login(
+    dto: { email: string; password: string; totp_code?: string },
+    ip: string,
+  ) {
     const user = await this.usersService.findByEmail(dto.email.toLowerCase());
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
@@ -197,14 +217,19 @@ export class AuthService {
   async requestPasswordReset(email: string) {
     const user = await this.usersService.findByEmail(email.toLowerCase());
     // Always return success to prevent email enumeration
-    if (!user) return { message: 'If that email exists, a reset link was sent' };
+    if (!user)
+      return { message: 'If that email exists, a reset link was sent' };
 
     const token = crypto.randomBytes(32).toString('hex');
     user.password_reset_token = token;
     user.password_reset_expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await this.usersService.save(user);
 
-    await this.emailService.sendPasswordReset(user.email, token, user.full_name);
+    await this.emailService.sendPasswordReset(
+      user.email,
+      token,
+      user.full_name,
+    );
     return { message: 'If that email exists, a reset link was sent' };
   }
 
@@ -223,22 +248,34 @@ export class AuthService {
     user.password_reset_expires = null;
     await this.usersService.save(user);
 
-    await this.emailService.sendPasswordChangedAlert(user.email, user.full_name);
+    await this.emailService.sendPasswordChangedAlert(
+      user.email,
+      user.full_name,
+    );
     return { message: 'Password reset successfully' };
   }
 
-  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
     const user = await this.usersService.findById(userId);
     const valid = await bcrypt.compare(currentPassword, user.password_hash);
     if (!valid) throw new BadRequestException('Current password is incorrect');
 
     if (newPassword.length < 8) {
-      throw new BadRequestException('New password must be at least 8 characters');
+      throw new BadRequestException(
+        'New password must be at least 8 characters',
+      );
     }
 
     user.password_hash = await bcrypt.hash(newPassword, 12);
     await this.usersService.save(user);
-    await this.emailService.sendPasswordChangedAlert(user.email, user.full_name);
+    await this.emailService.sendPasswordChangedAlert(
+      user.email,
+      user.full_name,
+    );
     return { message: 'Password changed successfully' };
   }
 
@@ -251,7 +288,11 @@ export class AuthService {
     }
 
     const secret = authenticator.generateSecret();
-    const otpAuthUrl = authenticator.keyuri(user.email, 'Lianka', secret);
+    const otpAuthUrl = authenticator.generateURI({
+      label: user.email,
+      issuer: 'Lianka',
+      secret,
+    });
     const qrCode = await QRCode.toDataURL(otpAuthUrl);
 
     // Save secret temporarily (not yet enabled)
@@ -286,7 +327,8 @@ export class AuthService {
 
   async disable2FA(userId: string, totpCode: string) {
     const user = await this.usersService.findById(userId);
-    if (!user.two_fa_enabled) throw new BadRequestException('2FA is not enabled');
+    if (!user.two_fa_enabled)
+      throw new BadRequestException('2FA is not enabled');
 
     const isValid = authenticator.verify({
       token: totpCode,
