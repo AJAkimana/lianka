@@ -11,12 +11,12 @@ import { AdminUser } from '../../entities/admin-user.entity';
 import { AdminLog } from '../../entities/admin-log.entity';
 import { DepositsService } from '../deposits/deposits.service';
 import { WithdrawalsService } from '../withdrawals/withdrawals.service';
-import { KycService } from '../../services/kyc.service';
 import { RoiService } from '../roi/roi.service';
 import { UsersService } from '../users/users.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
 import { RankService } from '../rank/rank.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { KycService } from '../kyc/kyc.service';
 
 @Injectable()
 export class AdminService {

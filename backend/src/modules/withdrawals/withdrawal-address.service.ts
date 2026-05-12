@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { WithdrawalAddress } from '../entities/withdrawal-address.entity';
+import { WithdrawalAddress } from '../../entities/withdrawal-address.entity';
 
 @Injectable()
 export class WithdrawalAddressService {
@@ -20,9 +20,13 @@ export class WithdrawalAddressService {
     });
 
     // Cooldown check
-    if (existing?.next_update_allowed_at && new Date() < new Date(existing.next_update_allowed_at)) {
+    if (
+      existing?.next_update_allowed_at &&
+      new Date() < new Date(existing.next_update_allowed_at)
+    ) {
       const remaining = Math.ceil(
-        (new Date(existing.next_update_allowed_at).getTime() - Date.now()) / (1000 * 60 * 60),
+        (new Date(existing.next_update_allowed_at).getTime() - Date.now()) /
+          (1000 * 60 * 60),
       );
       throw new BadRequestException(
         `Address can be updated in ${remaining} hours`,

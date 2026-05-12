@@ -1,11 +1,11 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { KycDocument } from '../entities/kyc-document.entity';
-import { UsersService } from '../modules/users/users.service';
-import { NotificationsService } from '../modules/notifications/notifications.service';
-import { EmailService } from '../modules/email/email.service';
 import * as path from 'path';
+import { KycDocument } from '../../entities/kyc-document.entity';
+import { UsersService } from '../users/users.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class KycService {
@@ -82,15 +82,22 @@ export class KycService {
       user_id: dto.userId,
       type: 'SYSTEM_ALERT',
       title: 'KYC Submitted',
-      message: 'Your identity documents have been submitted. Verification takes up to 24 hours.',
+      message:
+        'Your identity documents have been submitted. Verification takes up to 24 hours.',
       dot_color: 'blue',
     });
 
-    return { message: 'KYC documents submitted successfully', document_id: doc.id };
+    return {
+      message: 'KYC documents submitted successfully',
+      document_id: doc.id,
+    };
   }
 
   async findPending() {
-    return this.repo.find({ where: { status: 'SUBMITTED' }, order: { submitted_at: 'ASC' } });
+    return this.repo.find({
+      where: { status: 'SUBMITTED' },
+      order: { submitted_at: 'ASC' },
+    });
   }
 
   async approve(docId: string, adminId: string) {
@@ -112,7 +119,8 @@ export class KycService {
       user_id: doc.user_id,
       type: 'KYC_APPROVED',
       title: 'Identity Verified ✓',
-      message: 'Your KYC verification is complete. You can now withdraw your profits.',
+      message:
+        'Your KYC verification is complete. You can now withdraw your profits.',
       dot_color: 'green',
       is_critical: true,
     });

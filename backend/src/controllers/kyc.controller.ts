@@ -10,11 +10,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { KycService } from '../services/kyc.service';
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../modules/auth/guards/jwt-auth.guard';
+import { KycService } from '../modules/kyc/kyc.service';
 
 @ApiTags('kyc')
 @ApiBearerAuth()
