@@ -22,10 +22,10 @@ yarn install --production --frozen-lockfile --non-interactive
 
 # ─── 2. Run database migrations ───────────────────────────────
 echo "[2/4] Checking for pending migrations..."
-yarn migration:show
+./node_modules/.bin/typeorm -d dist/db/data.source.js migration:show
 
 echo "[3/4] Running migrations..."
-yarn migration:run
+./node_modules/.bin/typeorm -d dist/db/data.source.js migration:run
 
 # ─── 3. PM2 — reload or start ────────────────────────────────
 echo "[4/4] Starting / reloading PM2 process..."
