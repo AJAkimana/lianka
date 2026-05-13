@@ -16,12 +16,19 @@ echo "  Dir: $APP_DIR"
 echo "──────────────────────────────────────────"
 
 # ─── 1. Install production dependencies ──────────────────────
-echo "[1/3] Installing production dependencies..."
+echo "[1/4] Installing production dependencies..."
 cd "$APP_DIR"
 yarn install --production --frozen-lockfile --non-interactive
 
-# ─── 2. PM2 — reload or start ────────────────────────────────
-echo "[2/3] Starting / reloading PM2 process..."
+# ─── 2. Run database migrations ───────────────────────────────
+echo "[2/4] Checking for pending migrations..."
+yarn migration:show
+
+echo "[3/4] Running migrations..."
+yarn migration:run
+
+# ─── 3. PM2 — reload or start ────────────────────────────────
+echo "[4/4] Starting / reloading PM2 process..."
 if pm2 describe "$APP_NAME" > /dev/null 2>&1; then
   pm2 reload "$APP_NAME" --update-env
 else
@@ -33,8 +40,8 @@ else
     --time
 fi
 
-# ─── 3. Save PM2 process list (survives reboots) ─────────────
-echo "[3/3] Saving PM2 process list..."
+# ─── 4. Save PM2 process list (survives reboots) ─────────────
+echo "[4/4] Saving PM2 process list..."
 pm2 save
 
 echo ""
