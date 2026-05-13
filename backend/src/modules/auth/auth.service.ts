@@ -12,10 +12,10 @@ import * as crypto from 'crypto';
 import * as authenticator from 'otplib';
 import * as QRCode from 'qrcode';
 import { UsersService } from '../users/users.service';
-import { WalletsService } from '../../services/wallets.service';
 import { EmailService } from '../email/email.service';
 import { ReferralsService } from '../referrals/referrals.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { WalletsService } from '../wallets/wallets.service';
 
 @Injectable()
 export class AuthService {

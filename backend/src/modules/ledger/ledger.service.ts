@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LedgerEntry } from '../../entities/ledger.entity';
-import { WalletsService } from '../../services/wallets.service';
+import { WalletsService } from '../wallets/wallets.service';
 
 @Injectable()
 export class LedgerService {

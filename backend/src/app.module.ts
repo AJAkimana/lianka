@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -20,6 +20,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { EmailModule } from './modules/email/email.module';
 import { CycleModule } from './modules/cycle/cycle.module';
 import { ReinvestmentModule } from './modules/reinvestment/reinvestment.module';
+import { dataSourceOptions } from './db/data.source';
 
 @Module({
   imports: [
@@ -38,22 +39,7 @@ import { ReinvestmentModule } from './modules/reinvestment/reinvestment.module';
 
     // Database
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get('DB_HOST'),
-        port: config.get<number>('DB_PORT'),
-        username: config.get('DB_USER'),
-        password: config.get('DB_PASS'),
-        database: config.get('DB_NAME'),
-        autoLoadEntities: true,
-        synchronize: false, // NEVER true in production — schema.sql handles this
-        ssl: config.get('NODE_ENV') === 'production'
-          ? { rejectUnauthorized: false }
-          : false,
-        logging: config.get('NODE_ENV') !== 'production',
-      }),
-      inject: [ConfigService],
+      useFactory: () => dataSourceOptions,
     }),
 
     // Feature modules

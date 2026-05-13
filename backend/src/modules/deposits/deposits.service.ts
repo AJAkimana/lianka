@@ -1,22 +1,27 @@
 import {
-  Injectable, BadRequestException, ConflictException,
+  Injectable,
+  BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Deposit } from '../../entities/deposit.entity';
 import { UsersService } from '../users/users.service';
 import { LedgerService } from '../ledger/ledger.service';
-import { WalletsService } from '../../services/wallets.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { EmailService } from '../email/email.service';
-import { CycleService } from '../../services/cycle.service';
 import { ReferralsService } from '../referrals/referrals.service';
 import { RankService } from '../rank/rank.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
+import { CycleService } from '../cycle/cycle.service';
+import { WalletsService } from '../wallets/wallets.service';
 
 const DEPOSIT_ADDRESSES = {
-  TRC20: process.env.DEPOSIT_ADDRESS_TRC20 || 'TDFeZPisd4Rs31pkVCPGhz6QB6Y349jqHQ',
-  BEP20: process.env.DEPOSIT_ADDRESS_BEP20 || '0x1c9E87A2bE00A7bE0D76aEc122c2774DF996462D',
+  TRC20:
+    process.env.DEPOSIT_ADDRESS_TRC20 || 'TDFeZPisd4Rs31pkVCPGhz6QB6Y349jqHQ',
+  BEP20:
+    process.env.DEPOSIT_ADDRESS_BEP20 ||
+    '0x1c9E87A2bE00A7bE0D76aEc122c2774DF996462D',
 };
 
 const MIN_DEPOSIT = 100;
@@ -129,7 +134,8 @@ export class DepositsService {
     });
 
     return {
-      message: 'Deposit submitted successfully. Our team will verify within 24 hours.',
+      message:
+        'Deposit submitted successfully. Our team will verify within 24 hours.',
       deposit_id: deposit.id,
       amount: dto.amount,
       network: dto.network,
@@ -153,9 +159,12 @@ export class DepositsService {
     if (alreadyApproved && alreadyApproved.id !== depositId) {
       deposit.is_duplicate = true;
       deposit.status = 'REJECTED';
-      deposit.rejection_reason = 'Duplicate TXID — already approved on another submission';
+      deposit.rejection_reason =
+        'Duplicate TXID — already approved on another submission';
       await this.repo.save(deposit);
-      throw new BadRequestException('Duplicate TXID detected — deposit rejected');
+      throw new BadRequestException(
+        'Duplicate TXID detected — deposit rejected',
+      );
     }
 
     // Mark approved
@@ -166,8 +175,8 @@ export class DepositsService {
     await this.repo.save(deposit);
 
     const user = await this.usersService.findById(deposit.user_id);
-    const isFirstDeposit = user.account_state === 'INACTIVE' ||
-                           user.account_state === 'GRACE';
+    const isFirstDeposit =
+      user.account_state === 'INACTIVE' || user.account_state === 'GRACE';
 
     // Record on-time redeposit for loyalty tracking
     if (user.account_state === 'GRACE') {
@@ -177,21 +186,38 @@ export class DepositsService {
            (user_id, event_type, cycle_number, deposit_id, grace_end_date, redeposit_date, days_before_end)
            VALUES ($1, 'ON_TIME_REDEPOSIT', $2, $3, $4, NOW(),
              EXTRACT(DAY FROM ($4::timestamptz - NOW()))::int)`,
-          [deposit.user_id, user.completed_cycles, depositId, user.grace_end_date],
+          [
+            deposit.user_id,
+            user.completed_cycles,
+            depositId,
+            user.grace_end_date,
+          ],
         );
-      } catch { /* non-blocking — patch_001 may not be applied */ }
+      } catch {
+        /* non-blocking — patch_001 may not be applied */
+      }
     }
 
     if (isFirstDeposit || user.account_state === 'GRACE') {
       // Start or restart cycle
-      await this.usersService.resetCycle
-        ? await this.usersService.resetCycle(user, Number(deposit.amount), deposit.plan)
-        : await this.usersService.transitionToActive(user, Number(deposit.amount), deposit.plan);
+      (await this.usersService.resetCycle)
+        ? await this.usersService.resetCycle(
+            user,
+            Number(deposit.amount),
+            deposit.plan,
+          )
+        : await this.usersService.transitionToActive(
+            user,
+            Number(deposit.amount),
+            deposit.plan,
+          );
     } else if (user.account_state === 'ACTIVE') {
       // Top-up: add to active_deposit and principal
       user.principal = Number(user.principal) + Number(deposit.amount);
-      user.active_deposit = Number(user.active_deposit) + Number(deposit.amount);
-      user.total_balance = Number(user.active_deposit) + Number(user.total_profit);
+      user.active_deposit =
+        Number(user.active_deposit) + Number(deposit.amount);
+      user.total_balance =
+        Number(user.active_deposit) + Number(user.total_profit);
       await this.usersService.save(user);
     }
 
@@ -278,7 +304,10 @@ export class DepositsService {
     });
 
     await this.emailService.sendDepositRejected(
-      user.email, user.full_name, Number(deposit.amount), reason,
+      user.email,
+      user.full_name,
+      Number(deposit.amount),
+      reason,
     );
 
     return { message: 'Deposit rejected' };

@@ -14,8 +14,8 @@ import { AdminService } from '../modules/admin/admin.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiTags } from '@nestjs/swagger';
+import { IsString, IsOptional, IsNumber, IsIn } from 'class-validator';
 
 class AdminLoginDto {
   @IsString() email: string;
@@ -309,5 +309,112 @@ export class AdminController {
   @Get('health')
   health() {
     return { status: 'ok', timestamp: new Date().toISOString() };
+  }
+
+  // ── NEW ENDPOINTS ────────────────────────────────────────
+
+  @UseGuards(AdminGuard)
+  @Get('overview/full')
+  getFullOverview() {
+    return this.adminService.getFullOverview();
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('users/:id/flag')
+  flagUser(
+    @Param('id') id: string,
+    @Body() dto: { reason: string },
+    @Req() req,
+  ) {
+    return this.adminService.flagUser(id, req.admin.sub, dto.reason);
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('users/:id/force-logout')
+  forceLogout(@Param('id') id: string, @Req() req) {
+    return this.adminService.forceLogout(id, req.admin.sub);
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('users/:id/roi')
+  applyROIToUser(
+    @Param('id') id: string,
+    @Body() dto: { date: string },
+    @Req() req,
+  ) {
+    return this.adminService.applyROIToUser(id, dto.date, req.admin.sub);
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('users/:id/breach-reset')
+  processBreachReset(@Param('id') id: string, @Req() req) {
+    return this.adminService.processBreachReset(id, req.admin.sub);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('deposits/all')
+  getAllDeposits(@Query('page') page = 1, @Query('status') status?: string) {
+    return this.adminService.getAllDeposits(Number(page), 50, status);
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('deposits/:id/flag')
+  flagDeposit(
+    @Param('id') id: string,
+    @Body() dto: { reason: string },
+    @Req() req,
+  ) {
+    return this.adminService.flagDeposit(id, req.admin.sub, dto.reason);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('withdrawals/all')
+  getAllWithdrawals(@Query('page') page = 1, @Query('status') status?: string) {
+    return this.adminService.getAllWithdrawals(Number(page), 50, status);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('ledger')
+  getTransactionLedger(
+    @Query('page') page = 1,
+    @Query('userId') userId?: string,
+    @Query('type') type?: string,
+  ) {
+    return this.adminService.getTransactionLedger(Number(page), 50, {
+      userId,
+      type,
+    });
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('referrals')
+  getReferralOverview(@Query('page') page = 1) {
+    return this.adminService.getReferralOverview(Number(page));
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('referrals/:id/disable')
+  disableReferral(
+    @Param('id') id: string,
+    @Body() dto: { reason: string },
+    @Req() req,
+  ) {
+    return this.adminService.disableReferralRewards(
+      id,
+      req.admin.sub,
+      dto.reason,
+    );
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('loyalty')
+  getLoyaltyOverview(@Query('page') page = 1) {
+    return this.adminService.getLoyaltyOverview(Number(page));
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('breached')
+  getBreachedAccounts() {
+    return this.adminService.getBreachedAccounts();
   }
 }

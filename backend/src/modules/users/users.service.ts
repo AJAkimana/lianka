@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './users.entity';
-import { v4 as uuidv4 } from 'uuid';
+import { User } from '../../entities/users.entity';
 
 @Injectable()
 export class UsersService {
@@ -80,7 +79,11 @@ export class UsersService {
 
   // ─── State transitions ───────────────────────────────────
 
-  async transitionToActive(user: User, depositAmount: number, timeframe: string): Promise<User> {
+  async transitionToActive(
+    user: User,
+    depositAmount: number,
+    timeframe: string,
+  ): Promise<User> {
     user.account_state = 'ACTIVE';
     user.principal = Number(depositAmount);
     user.active_deposit = Number(depositAmount);
@@ -117,7 +120,11 @@ export class UsersService {
     return this.repo.save(user);
   }
 
-  async resetCycle(user: User, newDeposit: number, timeframe: string): Promise<User> {
+  async resetCycle(
+    user: User,
+    newDeposit: number,
+    timeframe: string,
+  ): Promise<User> {
     user.completed_cycles = Number(user.completed_cycles) + 1;
     user.principal = Number(newDeposit);
     user.active_deposit = Number(newDeposit);

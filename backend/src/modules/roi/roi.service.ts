@@ -6,10 +6,10 @@ import { RoiRate } from '../../entities/roi-rate.entity';
 import { RoiLog } from '../../entities/roi-log.entity';
 import { UsersService } from '../users/users.service';
 import { LedgerService } from '../ledger/ledger.service';
-import { CycleService } from '../../services/cycle.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ReferralsService } from '../referrals/referrals.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
+import { CycleService } from '../cycle/cycle.service';
 
 const MAX_RATES = {
   DAILY: 0.2,
