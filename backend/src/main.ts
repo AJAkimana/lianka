@@ -3,9 +3,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import { existsSync } from 'fs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Security
   app.use(helmet());
@@ -24,6 +27,17 @@ async function bootstrap() {
     }),
   );
 
+  if (process.env.NODE_ENV === 'production') {
+    app.setGlobalPrefix('api');
+
+    const staticRoot = join(__dirname, '..', '..', 'frontend', 'out');
+    if (existsSync(staticRoot)) {
+      app.useStaticAssets(staticRoot);
+    } else {
+      console.warn(`Static frontend not found at ${staticRoot}`);
+    }
+  }
+
   // Swagger docs (disable in production if needed)
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
@@ -36,7 +50,8 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs', app, document);
   }
 
-  await app.listen(3001);
-  console.log(`Lianka Backend running on port 3001`);
+  const port = process.env.PORT || 3001;
+  await app.listen(port);
+  console.log(`Lianka Backend running on port ${port}`);
 }
 bootstrap();
