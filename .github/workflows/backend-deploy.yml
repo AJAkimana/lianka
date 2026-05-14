@@ -10,51 +10,11 @@ on:
 
 jobs:
   build-and-deploy:
-    name: Build, Deploy & Restart PM2
+    name: Pull, Build & Deploy on VPS
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout ──────────────────────────────────────────────────────────
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # ── 2. Set up Node.js ────────────────────────────────────────────────────
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: "yarn"
-          cache-dependency-path: backend/yarn.lock
-
-      # ── 3. Install dependencies ──────────────────────────────────────────────
-      - name: Install dependencies
-        working-directory: backend
-        run: yarn install --frozen-lockfile
-
-      # ── 4. Build NestJS app ──────────────────────────────────────────────────
-      - name: Build
-        working-directory: backend
-        run: yarn build
-
-      # ── 5. Prune dev-dependencies before transfer ────────────────────────────
-      - name: Prune dev dependencies
-        working-directory: backend
-        run: yarn install --production --frozen-lockfile
-
-      # ── 6. Copy built artifacts to VPS via rsync ─────────────────────────────
-      - name: Deploy files to VPS
-        uses: burnett01/rsync-deployments@7.0.1
-        with:
-          switches: -avzr --delete --exclude='.env' --exclude='uploads/' --exclude='frontend/out/'
-          path: backend/
-          remote_path: ${{ secrets.VPS_DEPLOY_PATH }}/backend/
-          remote_host: ${{ secrets.VPS_HOST }}
-          remote_port: ${{ secrets.VPS_PORT }}
-          remote_user: ${{ secrets.VPS_USER }}
-          remote_key: ${{ secrets.VPS_SSH_KEY }}
-
-      # ── 7. SSH — run deploy script & restart PM2 ──────────────────────────────
-      - name: Restart app on VPS via PM2
+      - name: Pull, build, and deploy on VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -62,4 +22,9 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            bash ${{ secrets.VPS_DEPLOY_PATH }}/backend/deploy.sh
+            set -e
+            cd ${{ secrets.VPS_DEPLOY_PATH }}
+            git fetch origin
+            git checkout main
+            git pull --ff-only origin main
+            bash backend/deploy.sh
