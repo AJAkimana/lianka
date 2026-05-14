@@ -23,7 +23,9 @@ interface User {
   promotion_wallet_balance: number;
   total_referrals: number;
   active_referrals: number;
+  grace_end_date?: string | null;
   completed_cycles: number;
+  created_at?: string;
 }
 
 interface AuthState {
