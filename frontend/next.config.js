@@ -1,14 +1,11 @@
 /** @type {import('next').NextConfig} */
-const isProd = process.env.NODE_ENV === 'production';
-
 const nextConfig = {
-  output: isProd ? 'export' : 'standalone',
+  output: 'standalone',
   images: {
     domains: ['localhost'],
-    unoptimized: isProd,
   },
   async rewrites() {
-    if (isProd) return [];
+    if (process.env.NODE_ENV === 'production') return [];
     return [
       {
         source: '/api/:path*',

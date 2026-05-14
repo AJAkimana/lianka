@@ -49,7 +49,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setUser: (user) => set({ user }),
   setToken: (token) => {
-    localStorage.setItem('lianka_token', token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('lianka_token', token);
+    }
     set({ token });
   },
   setUnreadCount: (n) => set({ unreadCount: n }),
@@ -58,10 +60,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       user: state.user ? { ...state.user, ...partial } : null,
     })),
   logout: () => {
-    localStorage.removeItem('lianka_token');
-    localStorage.removeItem('lianka_user');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('lianka_token');
+      localStorage.removeItem('lianka_user');
+      window.location.href = '/login';
+    }
     set({ user: null, token: null });
-    window.location.href = '/login';
   },
 }));
 
@@ -83,12 +87,16 @@ export const useAdminStore = create<AdminState>((set) => ({
 
   setAdmin: (admin) => set({ admin }),
   setAdminToken: (token) => {
-    localStorage.setItem('lianka_admin_token', token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('lianka_admin_token', token);
+    }
     set({ adminToken: token });
   },
   adminLogout: () => {
-    localStorage.removeItem('lianka_admin_token');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('lianka_admin_token');
+      window.location.href = '/admin/login';
+    }
     set({ admin: null, adminToken: null });
-    window.location.href = '/admin/login';
   },
 }));

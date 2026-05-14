@@ -1,4 +1,4 @@
-name: Frontend — Build & Deploy Static
+name: Frontend — Build & Deploy
 
 on:
     push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
     build-and-deploy:
-        name: Build & Deploy Static Export
+      name: Build & Deploy Frontend
         runs-on: ubuntu-latest
 
         steps:
@@ -28,24 +28,24 @@ jobs:
               working-directory: frontend
               run: yarn install --frozen-lockfile
 
-            - name: Build static export
+            - name: Build Next.js app
               working-directory: frontend
               env:
                   NODE_ENV: production
               run: yarn build
 
-            - name: Deploy static files to VPS
+            - name: Deploy frontend build to VPS
               uses: burnett01/rsync-deployments@7.0.1
               with:
-                  switches: -avzr --delete
-                  path: frontend/out/
-                  remote_path: ${{ secrets.VPS_DEPLOY_PATH }}/backend/frontend/out/
+                  switches: -avzr --delete --exclude='node_modules/' --exclude='src/' --exclude='out/' --exclude='.next/cache/' --exclude='.next/types/'
+                  path: frontend/
+                  remote_path: ${{ secrets.VPS_DEPLOY_PATH }}/frontend/
                   remote_host: ${{ secrets.VPS_HOST }}
                   remote_port: ${{ secrets.VPS_PORT }}
                   remote_user: ${{ secrets.VPS_USER }}
                   remote_key: ${{ secrets.VPS_SSH_KEY }}
 
-            - name: Reload backend (serves static)
+            - name: Reload frontend via PM2
               uses: appleboy/ssh-action@v1.2.0
               with:
                   host: ${{ secrets.VPS_HOST }}
@@ -53,4 +53,4 @@ jobs:
                   username: ${{ secrets.VPS_USER }}
                   key: ${{ secrets.VPS_SSH_KEY }}
                   script: |
-                      pm2 reload lianka-backend --update-env
+                      bash ${{ secrets.VPS_DEPLOY_PATH }}/frontend/deploy.sh

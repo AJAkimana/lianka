@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { adminAPI } from '@/lib/api';
 import { useAdminStore } from '@/store/auth.store';
 import { fmt, StatusBadge, Spinner } from '@/components/ui';
@@ -16,7 +16,7 @@ import {
 function AdminLayout({ children, title }: { children: React.ReactNode; title: string }) {
   const { admin, adminLogout } = useAdminStore();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('overview');
+  const pathname = usePathname();
 
   const navItems = [
     { id: 'overview', label: 'Overview', icon: TrendingUp, href: '/admin' },
@@ -45,7 +45,7 @@ function AdminLayout({ children, title }: { children: React.ReactNode; title: st
           {navItems.map(item => (
             <button key={item.id} onClick={() => router.push(item.href)}
               className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors
-                ${window.location.pathname === item.href
+                ${pathname === item.href
                   ? 'bg-[#00C85315] text-[#00C853] border-r-2 border-[#00C853]'
                   : 'text-[#555] hover:text-white hover:bg-[#111]'}`}>
               <item.icon size={16} />
