@@ -2,7 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'lianka-frontend',
-      script: '.next/standalone/server.js',
+      cwd: '.next/standalone',
+      script: 'server.js',
       instances: 1,
       exec_mode: 'fork',
       env: {
