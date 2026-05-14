@@ -1,56 +1,56 @@
 name: Frontend — Build & Deploy
 
 on:
-    push:
-        branches:
-            - main
-        paths:
-            - "frontend/**"
-            - ".github/workflows/frontend-deploy.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-deploy.yml"
 
 jobs:
-    build-and-deploy:
-      name: Build & Deploy Frontend
-        runs-on: ubuntu-latest
+  build-and-deploy:
+    name: Build & Deploy Frontend
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-            - name: Set up Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: "24"
-                  cache: "yarn"
-                  cache-dependency-path: frontend/yarn.lock
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
 
-            - name: Install dependencies
-              working-directory: frontend
-              run: yarn install --frozen-lockfile
+      - name: Install dependencies
+        working-directory: frontend
+        run: yarn install --frozen-lockfile
 
-            - name: Build Next.js app
-              working-directory: frontend
-              env:
-                  NODE_ENV: production
-              run: yarn build
+      - name: Build Next.js app
+        working-directory: frontend
+        env:
+          NODE_ENV: production
+        run: yarn build
 
-            - name: Deploy frontend build to VPS
-              uses: burnett01/rsync-deployments@7.0.1
-              with:
-                  switches: -avzr --delete --exclude='node_modules/' --exclude='src/' --exclude='out/' --exclude='.next/cache/' --exclude='.next/types/'
-                  path: frontend/
-                  remote_path: ${{ secrets.VPS_DEPLOY_PATH }}/frontend/
-                  remote_host: ${{ secrets.VPS_HOST }}
-                  remote_port: ${{ secrets.VPS_PORT }}
-                  remote_user: ${{ secrets.VPS_USER }}
-                  remote_key: ${{ secrets.VPS_SSH_KEY }}
+      - name: Deploy frontend build to VPS
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete --exclude='node_modules/' --exclude='src/' --exclude='out/' --exclude='.next/cache/' --exclude='.next/types/'
+          path: frontend/
+          remote_path: ${{ secrets.VPS_DEPLOY_PATH }}/frontend/
+          remote_host: ${{ secrets.VPS_HOST }}
+          remote_port: ${{ secrets.VPS_PORT }}
+          remote_user: ${{ secrets.VPS_USER }}
+          remote_key: ${{ secrets.VPS_SSH_KEY }}
 
-            - name: Reload frontend via PM2
-              uses: appleboy/ssh-action@v1.2.0
-              with:
-                  host: ${{ secrets.VPS_HOST }}
-                  port: ${{ secrets.VPS_PORT }}
-                  username: ${{ secrets.VPS_USER }}
-                  key: ${{ secrets.VPS_SSH_KEY }}
-                  script: |
-                      bash ${{ secrets.VPS_DEPLOY_PATH }}/frontend/deploy.sh
+      - name: Reload frontend via PM2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            bash ${{ secrets.VPS_DEPLOY_PATH }}/frontend/deploy.sh
