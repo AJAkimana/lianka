@@ -76,7 +76,8 @@ export class EmailService {
     name?: string,
   ) {
     const link = `${this.frontendUrl}/verify-email?token=${token}`;
-    const html = this.base(`
+    const html = this.base(
+      `
       <h2 style="color:#fff;margin:0 0 8px;">Verify Your Email</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name || 'there'}, welcome to Lianka.</p>
       <p style="color:#ccc;line-height:1.6;">Click the button below to verify your email address and activate your account.</p>
@@ -91,13 +92,16 @@ export class EmailService {
       </div>
       <p style="color:#666;font-size:13px;">This link expires in 24 hours. If you did not create this account, ignore this email.</p>
       <p style="color:#444;font-size:12px;word-break:break-all;">Or copy: ${link}</p>
-    `, 'Verify Your Email');
+    `,
+      'Verify Your Email',
+    );
     await this.send(email, 'Verify your Lianka account', html);
   }
 
   async sendPasswordReset(email: string, token: string, name?: string) {
     const link = `${this.frontendUrl}/reset-password?token=${token}`;
-    const html = this.base(`
+    const html = this.base(
+      `
       <h2 style="color:#fff;margin:0 0 8px;">Reset Your Password</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name || 'there'},</p>
       <p style="color:#ccc;line-height:1.6;">A password reset was requested for your account. Click below to set a new password.</p>
@@ -105,22 +109,34 @@ export class EmailService {
         <a href="${link}" style="background:#00C853;color:#000;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;">Reset Password</a>
       </div>
       <p style="color:#666;font-size:13px;">This link expires in 1 hour. If you did not request this, your account is safe — ignore this email.</p>
-    `, 'Reset Password');
+    `,
+      'Reset Password',
+    );
     await this.send(email, 'Reset your Lianka password', html);
   }
 
   async sendPasswordChangedAlert(email: string, name?: string) {
-    const html = this.base(`
+    const html = this.base(
+      `
       <h2 style="color:#fff;margin:0 0 8px;">Password Changed</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name || 'there'},</p>
       <p style="color:#ccc;line-height:1.6;">Your Lianka account password was changed successfully.</p>
       <p style="color:#F9A825;line-height:1.6;">If you did not make this change, contact support immediately.</p>
-    `, 'Password Changed');
+    `,
+      'Password Changed',
+    );
     await this.send(email, 'Your Lianka password was changed', html);
   }
 
-  async sendDepositConfirmed(email: string, name: string, amount: number, network: string, txid: string) {
-    const html = this.base(`
+  async sendDepositConfirmed(
+    email: string,
+    name: string,
+    amount: number,
+    network: string,
+    txid: string,
+  ) {
+    const html = this.base(
+      `
       <h2 style="color:#00C853;margin:0 0 8px;">Deposit Confirmed ✓</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name},</p>
       <p style="color:#ccc;">Your deposit has been confirmed and credited to your account.</p>
@@ -130,12 +146,20 @@ export class EmailService {
         <tr><td style="color:#888;padding:10px 0;">Transaction ID</td><td style="color:#fff;text-align:right;font-size:12px;word-break:break-all;">${txid}</td></tr>
       </table>
       <p style="color:#ccc;">Your cycle is now active and earning daily ROI.</p>
-    `, 'Deposit Confirmed');
+    `,
+      'Deposit Confirmed',
+    );
     await this.send(email, 'Deposit confirmed — Lianka', html);
   }
 
-  async sendDepositRejected(email: string, name: string, amount: number, reason: string) {
-    const html = this.base(`
+  async sendDepositRejected(
+    email: string,
+    name: string,
+    amount: number,
+    reason: string,
+  ) {
+    const html = this.base(
+      `
       <h2 style="color:#C1121F;margin:0 0 8px;">Deposit Rejected</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name},</p>
       <p style="color:#ccc;">Your deposit submission of $${amount.toFixed(2)} USDT was rejected.</p>
@@ -143,12 +167,22 @@ export class EmailService {
         <p style="color:#ff6b6b;margin:0;font-weight:600;">Reason: ${reason}</p>
       </div>
       <p style="color:#ccc;">Please submit a new deposit with the correct transaction details.</p>
-    `, 'Deposit Rejected');
+    `,
+      'Deposit Rejected',
+    );
     await this.send(email, 'Deposit rejected — Lianka', html);
   }
 
-  async sendWithdrawalRequested(email: string, name: string, amount: number, finalAmount: number, address: string, network: string) {
-    const html = this.base(`
+  async sendWithdrawalRequested(
+    email: string,
+    name: string,
+    amount: number,
+    finalAmount: number,
+    address: string,
+    network: string,
+  ) {
+    const html = this.base(
+      `
       <h2 style="color:#fff;margin:0 0 8px;">Withdrawal Requested</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name},</p>
       <p style="color:#ccc;">Your withdrawal request has been submitted and is pending admin approval.</p>
@@ -160,12 +194,21 @@ export class EmailService {
         <tr><td style="color:#888;padding:10px 0;">To Address</td><td style="color:#fff;text-align:right;font-size:12px;word-break:break-all;">${address}</td></tr>
       </table>
       <p style="color:#888;font-size:13px;">Processing time: 24–72 hours. You will be notified once sent.</p>
-    `, 'Withdrawal Requested');
+    `,
+      'Withdrawal Requested',
+    );
     await this.send(email, 'Withdrawal request received — Lianka', html);
   }
 
-  async sendWithdrawalCompleted(email: string, name: string, finalAmount: number, txid: string, address: string) {
-    const html = this.base(`
+  async sendWithdrawalCompleted(
+    email: string,
+    name: string,
+    finalAmount: number,
+    txid: string,
+    address: string,
+  ) {
+    const html = this.base(
+      `
       <h2 style="color:#00C853;margin:0 0 8px;">Withdrawal Sent ✓</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name},</p>
       <p style="color:#ccc;">Your withdrawal has been processed and sent to your wallet.</p>
@@ -175,33 +218,47 @@ export class EmailService {
         <tr><td style="color:#888;padding:10px 0;">Transaction ID</td><td style="color:#fff;text-align:right;font-size:12px;word-break:break-all;">${txid}</td></tr>
       </table>
       <p style="color:#888;font-size:13px;">It may take a few minutes to appear depending on network confirmations.</p>
-    `, 'Withdrawal Sent');
+    `,
+      'Withdrawal Sent',
+    );
     await this.send(email, 'Withdrawal sent — Lianka', html);
   }
 
-  async sendWithdrawalRejected(email: string, name: string, amount: number, reason: string) {
-    const html = this.base(`
+  async sendWithdrawalRejected(
+    email: string,
+    name: string,
+    amount: number,
+    reason: string,
+  ) {
+    const html = this.base(
+      `
       <h2 style="color:#C1121F;margin:0 0 8px;">Withdrawal Rejected</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name},</p>
       <p style="color:#ccc;">Your withdrawal of $${amount.toFixed(2)} was rejected. Funds have been returned to your wallet.</p>
       <div style="background:#1a0000;border:1px solid #C1121F;border-radius:8px;padding:16px;margin:16px 0;">
         <p style="color:#ff6b6b;margin:0;font-weight:600;">Reason: ${reason}</p>
       </div>
-    `, 'Withdrawal Rejected');
+    `,
+      'Withdrawal Rejected',
+    );
     await this.send(email, 'Withdrawal rejected — Lianka', html);
   }
 
   async sendKYCApproved(email: string, name: string) {
-    const html = this.base(`
+    const html = this.base(
+      `
       <h2 style="color:#00C853;margin:0 0 8px;">KYC Verified ✓</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name},</p>
       <p style="color:#ccc;">Your identity has been verified. You can now withdraw your profits.</p>
-    `, 'KYC Approved');
+    `,
+      'KYC Approved',
+    );
     await this.send(email, 'Identity verified — Lianka', html);
   }
 
   async sendKYCRejected(email: string, name: string, reason: string) {
-    const html = this.base(`
+    const html = this.base(
+      `
       <h2 style="color:#C1121F;margin:0 0 8px;">KYC Verification Failed</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name},</p>
       <p style="color:#ccc;">Your KYC submission was rejected.</p>
@@ -209,27 +266,39 @@ export class EmailService {
         <p style="color:#ff6b6b;margin:0;font-weight:600;">Reason: ${reason}</p>
       </div>
       <p style="color:#ccc;">Please resubmit with the correct documents.</p>
-    `, 'KYC Rejected');
+    `,
+      'KYC Rejected',
+    );
     await this.send(email, 'KYC verification failed — Lianka', html);
   }
 
-  async sendAccountTerminated(email: string, name: string, terminationFee: number) {
-    const html = this.base(`
+  async sendAccountTerminated(
+    email: string,
+    name: string,
+    terminationFee: number,
+  ) {
+    const html = this.base(
+      `
       <h2 style="color:#C1121F;margin:0 0 8px;">Account Closed</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name},</p>
       <p style="color:#ccc;">Your account has been closed because your balance fell below your principal amount.</p>
       ${terminationFee > 0 ? `<p style="color:#F9A825;">Termination fee applied: $${terminationFee.toFixed(2)}. Reach 80% loyalty score to waive this fee in future cycles.</p>` : ''}
       <p style="color:#888;font-size:13px;">Contact support if you have questions.</p>
-    `, 'Account Terminated');
+    `,
+      'Account Terminated',
+    );
     await this.send(email, 'Account closed — Lianka', html);
   }
 
   async sendRankUp(email: string, name: string, rank: string) {
-    const html = this.base(`
+    const html = this.base(
+      `
       <h2 style="color:#00C853;margin:0 0 8px;">Rank Achieved: ${rank} 🏆</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name},</p>
       <p style="color:#ccc;">Congratulations! You have advanced to <strong style="color:#00C853;">${rank}</strong> rank. New privileges are now unlocked.</p>
-    `, 'Rank Up');
+    `,
+      'Rank Up',
+    );
     await this.send(email, `You reached ${rank} rank — Lianka`, html);
   }
 }
