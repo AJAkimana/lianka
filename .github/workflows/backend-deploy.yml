@@ -24,7 +24,7 @@ jobs:
           script: |
             set -e
             cd ${{ secrets.VPS_DEPLOY_PATH }}
-            git reset --hard HEAD
             git checkout main
+            git reset --hard HEAD
             git pull origin main
             bash backend/deploy.sh
