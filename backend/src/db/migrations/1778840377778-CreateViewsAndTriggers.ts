@@ -79,9 +79,9 @@ SELECT
   COALESCE(ref_counts.total_referrals, 0) AS total_referrals,
   COALESCE(ref_counts.active_referrals, 0) AS active_referrals
 FROM users u
-LEFT JOIN wallets pw ON pw.user_id = u.id AND pw.wallet_type = 'profit'
-LEFT JOIN wallets rw ON rw.user_id = u.id AND rw.wallet_type = 'referral'
-LEFT JOIN wallets pmw ON pmw.user_id = u.id AND pmw.wallet_type = 'promotion'
+LEFT JOIN wallets pw ON pw.user_id = u.id::text AND pw.wallet_type = 'profit'
+LEFT JOIN wallets rw ON rw.user_id = u.id::text AND rw.wallet_type = 'referral'
+LEFT JOIN wallets pmw ON pmw.user_id = u.id::text AND pmw.wallet_type = 'promotion'
 LEFT JOIN (
   SELECT
     referrer_id,
@@ -89,7 +89,7 @@ LEFT JOIN (
     COUNT(*) FILTER (WHERE status = 'ACTIVE') AS active_referrals
   FROM referrals
   GROUP BY referrer_id
-) ref_counts ON ref_counts.referrer_id = u.id`);
+) ref_counts ON ref_counts.referrer_id = u.id::text`);
 
     await queryRunner.query(`CREATE OR REPLACE VIEW admin_overview AS
 SELECT
