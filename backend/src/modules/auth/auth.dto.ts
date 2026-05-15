@@ -31,8 +31,13 @@ export class LoginDto {
 }
 
 export class VerifyEmailDto {
+  @IsOptional()
   @IsString()
-  token: string;
+  token?: string;
+
+  @IsOptional()
+  @IsString()
+  code?: string;
 }
 
 export class ResendVerifyDto {

@@ -51,8 +51,12 @@ export class AuthService {
     // Hash password
     const password_hash = await bcrypt.hash(dto.password, 12);
 
-    // Email verify token
+    // Email verify token + code
     const email_verify_token = crypto.randomBytes(32).toString('hex');
+    const email_verify_code = crypto
+      .randomInt(0, 1000000)
+      .toString()
+      .padStart(6, '0');
     const email_verify_expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     // Find referrer
@@ -70,6 +74,7 @@ export class AuthService {
       password_hash,
       full_name: dto.full_name,
       email_verify_token,
+      email_verify_code,
       email_verify_expires,
       referred_by,
       account_state: 'INACTIVE',
@@ -87,6 +92,7 @@ export class AuthService {
     await this.emailService.sendEmailVerification(
       email,
       email_verify_token,
+      email_verify_code,
       dto.full_name,
     );
 
@@ -98,8 +104,13 @@ export class AuthService {
 
   // ─── Email Verification ──────────────────────────────────
 
-  async verifyEmail(token: string) {
-    const user = await this.usersService.findByEmailVerifyToken(token);
+  async verifyEmail(dto: { token?: string; code?: string }) {
+    const lookup = dto.token || dto.code;
+    if (!lookup) {
+      throw new BadRequestException('Verification token or code is required');
+    }
+
+    const user = await this.usersService.findByEmailVerifyToken(lookup);
     if (!user)
       throw new BadRequestException('Invalid or expired verification link');
 
@@ -111,6 +122,7 @@ export class AuthService {
 
     user.email_verified = true;
     user.email_verify_token = null;
+    user.email_verify_code = null;
     user.email_verify_expires = null;
     await this.usersService.save(user);
 
@@ -124,13 +136,16 @@ export class AuthService {
       throw new BadRequestException('Email already verified');
 
     const token = crypto.randomBytes(32).toString('hex');
+    const code = crypto.randomInt(0, 1000000).toString().padStart(6, '0');
     user.email_verify_token = token;
+    user.email_verify_code = code;
     user.email_verify_expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await this.usersService.save(user);
 
     await this.emailService.sendEmailVerification(
       user.email,
       token,
+      code,
       user.full_name,
     );
     return { message: 'Verification email resent' };

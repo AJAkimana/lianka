@@ -310,7 +310,7 @@ export function VerifyEmailPage({ email }: { email: string }) {
     if (code.length !== 6) { toast.error('Enter the 6-digit code'); return; }
     setLoading(true);
     try {
-      await authAPI.verifyEmail(code);
+      await authAPI.verifyEmail({ code });
       router.push('/account-created');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Invalid or expired code');

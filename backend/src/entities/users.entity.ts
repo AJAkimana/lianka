@@ -1,6 +1,10 @@
 import {
-  Entity, PrimaryGeneratedColumn, Column,
-  CreateDateColumn, UpdateDateColumn, Index,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 @Entity('users')
@@ -92,6 +96,9 @@ export class User {
 
   @Column({ nullable: true })
   email_verify_token: string;
+
+  @Column({ nullable: true })
+  email_verify_code: string;
 
   @Column({ type: 'timestamptz', nullable: true })
   email_verify_expires: Date;

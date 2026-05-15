@@ -31,12 +31,12 @@ export class AuthController {
 
   @Post('verify-email')
   verifyEmail(@Body() dto: VerifyEmailDto) {
-    return this.authService.verifyEmail(dto.token);
+    return this.authService.verifyEmail(dto);
   }
 
   @Get('verify-email/:token')
   verifyEmailGet(@Param('token') token: string) {
-    return this.authService.verifyEmail(token);
+    return this.authService.verifyEmail({ token });
   }
 
   @Post('resend-verification')

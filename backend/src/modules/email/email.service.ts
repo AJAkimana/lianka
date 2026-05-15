@@ -69,12 +69,23 @@ export class EmailService {
 </html>`;
   }
 
-  async sendEmailVerification(email: string, token: string, name?: string) {
+  async sendEmailVerification(
+    email: string,
+    token: string,
+    code: string,
+    name?: string,
+  ) {
     const link = `${this.frontendUrl}/verify-email?token=${token}`;
     const html = this.base(`
       <h2 style="color:#fff;margin:0 0 8px;">Verify Your Email</h2>
       <p style="color:#aaa;margin:0 0 24px;">Hi ${name || 'there'}, welcome to Lianka.</p>
       <p style="color:#ccc;line-height:1.6;">Click the button below to verify your email address and activate your account.</p>
+      <div style="text-align:center;margin:24px 0;">
+        <div style="display:inline-block;background:#0d0d0d;border:1px solid #1a1a1a;border-radius:8px;padding:10px 16px;">
+          <span style="color:#00C853;font-size:20px;letter-spacing:4px;font-weight:800;">${code}</span>
+        </div>
+        <p style="color:#666;font-size:12px;margin:8px 0 0;">Or enter this 6-digit code on the verification screen.</p>
+      </div>
       <div style="text-align:center;margin:32px 0;">
         <a href="${link}" style="background:#00C853;color:#000;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;display:inline-block;">Verify Email</a>
       </div>

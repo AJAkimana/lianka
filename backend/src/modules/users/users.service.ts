@@ -31,8 +31,13 @@ export class UsersService {
     return this.repo.findOne({ where: { referral_code: code } });
   }
 
-  async findByEmailVerifyToken(token: string): Promise<User | null> {
-    return this.repo.findOne({ where: { email_verify_token: token } });
+  async findByEmailVerifyToken(tokenOrCode: string): Promise<User | null> {
+    return this.repo.findOne({
+      where: [
+        { email_verify_token: tokenOrCode },
+        { email_verify_code: tokenOrCode },
+      ],
+    });
   }
 
   async findByPasswordResetToken(token: string): Promise<User | null> {

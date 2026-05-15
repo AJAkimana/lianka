@@ -62,6 +62,7 @@ CREATE TABLE users (
   two_fa_enabled        BOOLEAN NOT NULL DEFAULT FALSE,
   email_verified        BOOLEAN NOT NULL DEFAULT FALSE,
   email_verify_token    TEXT,
+  email_verify_code     TEXT,
   email_verify_expires  TIMESTAMPTZ,
   password_reset_token  TEXT,
   password_reset_expires TIMESTAMPTZ,
@@ -587,7 +588,7 @@ CREATE TRIGGER admin_users_updated_at
 -- ============================================================
 
 -- User dashboard summary view
-CREATE VIEW user_dashboard AS
+CREATE OR REPLACE VIEW user_dashboard AS
 SELECT
   u.id,
   u.email,
@@ -636,7 +637,7 @@ LEFT JOIN (
 ) ref_counts ON ref_counts.referrer_id = u.id;
 
 -- Admin global overview
-CREATE VIEW admin_overview AS
+CREATE OR REPLACE VIEW admin_overview AS
 SELECT
   COUNT(*) AS total_users,
   COUNT(*) FILTER (WHERE account_state = 'ACTIVE') AS active_users,
@@ -650,7 +651,7 @@ SELECT
 FROM users;
 
 -- Pending actions view for admin
-CREATE VIEW admin_pending_actions AS
+CREATE OR REPLACE VIEW admin_pending_actions AS
 SELECT 'DEPOSIT' AS action_type, id AS item_id, user_id, amount, created_at
 FROM deposits WHERE status = 'PENDING'
 UNION ALL
